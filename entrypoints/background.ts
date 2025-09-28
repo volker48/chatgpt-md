@@ -6,7 +6,6 @@ async function actionListener(tab: Browser.tabs.Tab) {
       target: { tabId: tab.id },
       files: ["/content-scripts/content.js"],
     });
-    console.log(res);
     const markdown = res[0].result as string[];
     const md = markdown.join("\n\n");
     const dataUrl =
