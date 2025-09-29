@@ -1,0 +1,54 @@
+name: Build Extension Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build and Package Extension
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Chromium package
+        run: pnpm zip
+
+      - name: Build Firefox package
+        run: pnpm zip:firefox
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatgpt-markdown-downloader-${{ github.ref_name }}
+          path: |
+            dist/chatgpt-markdown-downloader-*-chrome.zip
+            dist/chatgpt-markdown-downloader-*-firefox.zip
+            dist/chatgpt-markdown-downloader-*-sources.zip
+          if-no-files-found: error
+
+      - name: Attach assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/chatgpt-markdown-downloader-*-chrome.zip
+            dist/chatgpt-markdown-downloader-*-firefox.zip
+            dist/chatgpt-markdown-downloader-*-sources.zip
+          fail_on_unmatched_files: true
